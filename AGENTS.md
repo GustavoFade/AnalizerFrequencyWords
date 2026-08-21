@@ -2,7 +2,7 @@
 
 ## Repository State
 
-- This repository is currently a blank starting point: there is no manifest, source tree, lockfile, build configuration, or test configuration yet.
+- The repository was bootstrapped with Node.js 24.19.0, TypeScript, Jest, Electron and ESLint.
 - Do not assume scripts or directory boundaries exist; establish them explicitly when bootstrapping the Node.js/TypeScript project.
 - Keep detailed design notes in dedicated project documentation rather than expanding this file.
 
@@ -26,12 +26,24 @@
 - Analyze books incrementally with streams/chunks: do not load the complete book text into memory; TXT should use a readable stream and PDF should be processed page by page before emitting text chunks.
 - Use database constraints and a transaction when importing a book, creating/reusing words, and inserting links; imports must not leave partial relationships.
 - The user approved `pdfjs-dist` for PDF text extraction; use it only when bootstrapping the project. It does not provide OCR for scanned PDFs. TXT extraction can use Node's standard filesystem APIs unless requirements change.
+- SQLite driver decision: use `sql.js` initially because it provides SQLite semantics without a native addon, which keeps installation compatible with the current Windows/Node environment. Keep it behind infrastructure ports so the driver can be replaced if Electron persistence requirements require a native file-backed driver.
 - Once tooling is added, document the exact install, development, test, focused-test, typecheck, lint, and build commands here only when they are verified from the project configuration.
 
 ## Verification
 
 - Add Jest unit coverage for token normalization, frequency aggregation, repeated-word reuse, many-to-many linking, and failed/partial imports.
 - Prefer focused tests for the changed module first, then run the repository's configured checks in their documented order.
+
+## Verified commands
+
+- Install: `npm install`
+- Development shell: `npm run dev`
+- Tests: `npm test`
+- Focused bootstrap test: `npm run test:focused`
+- Typecheck: `npm run typecheck`
+- Lint: `npm run lint`
+- Build: `npm run build`
+- Architecture fitness functions: `npm run test:architecture`
 
 ## Delivery Workflow
 
