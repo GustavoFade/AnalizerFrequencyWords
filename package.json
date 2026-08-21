@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "npm run build && electron .",
     "build": "tsc -p tsconfig.json && node scripts/copy-renderer.cjs",
+    "measure:streaming": "npm run build && node scripts/measure-streaming.cjs",
     "package": "npm run build && electron-builder --dir",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
     "test:focused": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand test/bootstrap.test.ts",
