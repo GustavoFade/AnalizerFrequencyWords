@@ -5,6 +5,7 @@ interface PersistentDatabase {
   run(sql: string, params?: readonly unknown[]): void;
   exec(sql: string, params?: readonly unknown[]): Array<{ columns: string[]; values: unknown[][] }>;
   export(): Uint8Array;
+  close(): void;
 }
 
 interface SqlJsStatic {

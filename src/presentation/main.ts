@@ -1,6 +1,7 @@
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import { join } from 'node:path';
 import { AddBook } from '../application/add-book';
+import { SerialTaskQueue } from '../application/serial-task-queue';
 import { PdfExtractor } from '../infrastructure/extractors/pdf-extractor';
 import { fileTypeFor } from '../infrastructure/extractors/file-validation';
 import { TxtExtractor } from '../infrastructure/extractors/txt-extractor';
@@ -23,7 +24,7 @@ function createWindow(): void {
   void window.loadFile(join(__dirname, 'index.html'));
 }
 
-function registerIpc(store: SqliteBookStore, save: () => Promise<void>): void {
+function registerIpc(store: SqliteBookStore, save: () => Promise<void>, queue: SerialTaskQueue): void {
   ipcMain.handle('books:choose-file', async () => {
     const result = await dialog.showOpenDialog({
       properties: ['openFile'],
@@ -32,11 +33,11 @@ function registerIpc(store: SqliteBookStore, save: () => Promise<void>): void {
     return result.canceled ? null : result.filePaths[0] ?? null;
   });
 
-  ipcMain.handle('books:add', async (_event, request: Parameters<BooksApi['addBook']>[0]) => {
+  ipcMain.handle('books:add', (_event, request: Parameters<BooksApi['addBook']>[0]) => queue.add(async () => {
     const extractor = fileTypeFor(request.sourceIdentifier) === 'pdf' ? new PdfExtractor() : new TxtExtractor();
     await new AddBook(extractor, store).execute(request);
     await save();
-  });
+  }));
 
   ipcMain.handle('books:list-frequencies', (_event, query: FrequencyQuery) => {
     if (query.scope === 'book') return store.listBookFrequencies(query.bookId);
@@ -52,8 +53,18 @@ void app.whenReady().then(async () => {
   const database = await openPersistentDatabase(databasePath);
   const store = new SqliteBookStore(database);
   const save = () => savePersistentDatabase(databasePath, database);
-  registerIpc(store, save);
-  app.on('before-quit', () => { void save(); });
+  const queue = new SerialTaskQueue();
+  registerIpc(store, save, queue);
+  let closing = false;
+  app.on('before-quit', (event) => {
+    if (closing) return;
+    closing = true;
+    event.preventDefault();
+    void queue.idle().then(save).then(() => {
+      database.close();
+      app.exit();
+    });
+  });
   createWindow();
 
   app.on('activate', () => {
