@@ -1,5 +1,5 @@
-import type { WordFrequency } from '../domain/word';
 import type { BookSummary } from '../application/ports/book-store';
+import type { FrequencyRowDto } from '../application/frequency-query';
 
 export interface AddBookRequest {
   readonly title: string;
@@ -15,7 +15,7 @@ export type FrequencyQuery =
 export interface BooksApi {
   chooseBookFile(): Promise<string | null>;
   addBook(request: AddBookRequest): Promise<void>;
-  listFrequencies(query: FrequencyQuery): Promise<WordFrequency[]>;
+  listFrequencies(query: FrequencyQuery): Promise<FrequencyRowDto[]>;
   listBooks(): Promise<BookSummary[]>;
   listSubjectAreas(): Promise<string[]>;
 }

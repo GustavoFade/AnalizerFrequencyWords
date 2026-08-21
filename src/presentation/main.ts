@@ -1,6 +1,7 @@
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import { join } from 'node:path';
 import { AddBook } from '../application/add-book';
+import { ListFrequencies } from '../application/frequency-query';
 import { SerialTaskQueue } from '../application/serial-task-queue';
 import { PdfExtractor } from '../infrastructure/extractors/pdf-extractor';
 import { fileTypeFor } from '../infrastructure/extractors/file-validation';
@@ -25,6 +26,7 @@ function createWindow(): void {
 }
 
 function registerIpc(store: SqliteBookStore, save: () => Promise<void>, queue: SerialTaskQueue): void {
+  const listFrequencies = new ListFrequencies(store);
   ipcMain.handle('books:choose-file', async () => {
     const result = await dialog.showOpenDialog({
       properties: ['openFile'],
@@ -39,11 +41,7 @@ function registerIpc(store: SqliteBookStore, save: () => Promise<void>, queue: S
     await save();
   }));
 
-  ipcMain.handle('books:list-frequencies', (_event, query: FrequencyQuery) => {
-    if (query.scope === 'book') return store.listBookFrequencies(query.bookId);
-    if (query.scope === 'area') return store.listAreaFrequencies(query.subjectArea);
-    return store.listGlobalFrequencies();
-  });
+  ipcMain.handle('books:list-frequencies', (_event, query: FrequencyQuery) => listFrequencies.execute(query));
   ipcMain.handle('books:list-books', () => store.listBooks());
   ipcMain.handle('books:list-areas', () => store.listSubjectAreas());
 }
