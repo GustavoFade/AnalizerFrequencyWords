@@ -31,6 +31,7 @@
     "typescript-eslint": "^8.18.0"
   },
   "dependencies": {
+    "pdfjs-dist": "^6.2.108",
     "sql.js": "^1.12.0"
   }
 }
