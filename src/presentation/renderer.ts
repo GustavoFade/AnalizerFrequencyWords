@@ -8,7 +8,6 @@ declare global {
 const form = document.querySelector<HTMLFormElement>('#add-book-form');
 const fileInput = document.querySelector<HTMLInputElement>('#file');
 const areaInput = document.querySelector<HTMLInputElement>('#subject-area');
-const chooseButton = document.querySelector<HTMLButtonElement>('#choose-file');
 const status = document.querySelector<HTMLElement>('#status');
 const wordList = document.querySelector<HTMLUListElement>('#word-list');
 const scopeSelect = document.querySelector<HTMLSelectElement>('#view-scope');
@@ -64,9 +63,9 @@ async function updateFilterOptions(): Promise<void> {
   renderWords();
 }
 
-chooseButton?.addEventListener('click', async () => {
-  selectedFile = await window.booksApi.chooseBookFile();
-  if (fileInput) fileInput.value = selectedFile ?? '';
+fileInput?.addEventListener('change', () => {
+  const file = fileInput.files?.[0];
+  selectedFile = file ? window.booksApi.getPathForFile(file) : null;
 });
 
 form?.addEventListener('submit', async (event) => {

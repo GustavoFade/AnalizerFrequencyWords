@@ -1,8 +1,8 @@
-import { contextBridge, ipcRenderer } from 'electron';
+import { contextBridge, ipcRenderer, webUtils } from 'electron';
 import type { BooksApi } from './ipc-contract';
 
 const api: BooksApi = {
-  chooseBookFile: () => ipcRenderer.invoke('books:choose-file'),
+  getPathForFile: (file) => webUtils.getPathForFile(file),
   addBook: (request) => ipcRenderer.invoke('books:add', request),
   listFrequencies: (query) => ipcRenderer.invoke('books:list-frequencies', query),
   listBooks: () => ipcRenderer.invoke('books:list-books'),

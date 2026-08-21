@@ -14,7 +14,7 @@ export type FrequencyQuery =
   | { readonly scope: 'shared' };
 
 export interface BooksApi {
-  chooseBookFile(): Promise<string | null>;
+  getPathForFile(file: File): string;
   addBook(request: AddBookRequest): Promise<void>;
   listFrequencies(query: FrequencyQuery): Promise<FrequencyRowDto[]>;
   listBooks(): Promise<BookSummary[]>;

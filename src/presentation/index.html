@@ -27,7 +27,7 @@
       <section class="panel">
         <form id="add-book-form">
           <label>Book file
-            <span><input id="file" type="text" readonly placeholder="Choose a TXT or PDF file" /><button class="secondary" id="choose-file" type="button">Choose</button></span>
+            <input id="file" type="file" accept=".txt,.pdf,text/plain,application/pdf" required />
           </label>
           <label>Subject area<input id="subject-area" required placeholder="e.g. history" /></label>
           <button type="submit">Add book</button>
