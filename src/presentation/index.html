@@ -4,11 +4,41 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Frequency Words Analyzer</title>
+    <style>
+      :root { color-scheme: light; font-family: system-ui, sans-serif; background: #f4f0e8; color: #25211d; }
+      body { margin: 0; }
+      main { max-width: 960px; margin: 0 auto; padding: 32px 20px; }
+      h1 { margin-bottom: 8px; font-family: Georgia, serif; font-size: clamp(2rem, 5vw, 4rem); }
+      .panel { background: #fffdf8; border: 1px solid #d8cfc2; border-radius: 14px; padding: 20px; box-shadow: 0 8px 24px #5e4e3b12; }
+      form { display: grid; gap: 12px; grid-template-columns: 1fr 1fr auto; align-items: end; }
+      label { display: grid; gap: 5px; font-size: .85rem; font-weight: 700; }
+      input, button { border: 1px solid #bdb1a2; border-radius: 8px; padding: 10px 12px; font: inherit; }
+      button { background: #304f43; color: white; cursor: pointer; font-weight: 700; }
+      button.secondary { background: transparent; color: #304f43; }
+      #status { min-height: 1.5em; margin: 14px 0; }
+      #word-list { max-height: 52vh; overflow-y: auto; padding: 0; list-style: none; }
+      #word-list li { display: flex; justify-content: space-between; padding: 10px 4px; border-bottom: 1px solid #e6ded4; }
+      @media (max-width: 700px) { form { grid-template-columns: 1fr; } }
+    </style>
   </head>
   <body>
     <main>
       <h1>Frequency Words Analyzer</h1>
-      <p>Project shell ready for book analysis.</p>
+      <section class="panel">
+        <form id="add-book-form">
+          <label>Book file
+            <span><input id="file" type="text" readonly placeholder="Choose a TXT or PDF file" /><button class="secondary" id="choose-file" type="button">Choose</button></span>
+          </label>
+          <label>Subject area<input id="subject-area" required placeholder="e.g. history" /></label>
+          <button type="submit">Add book</button>
+        </form>
+        <p id="status" role="status"></p>
+      </section>
+      <section class="panel" aria-labelledby="frequency-heading">
+        <h2 id="frequency-heading">Global frequencies</h2>
+        <ul id="word-list"><li>No books imported yet.</li></ul>
+      </section>
     </main>
+    <script src="renderer.js"></script>
   </body>
 </html>
