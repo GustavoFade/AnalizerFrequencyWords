@@ -19,6 +19,7 @@ export type FrequencyQuery =
 
 export interface BooksApi {
   getPathForFile(file: File): string;
+  chooseBookFile(): Promise<string | null>;
   onImportProgress(listener: (progress: ImportProgress) => void): () => void;
   addBook(request: AddBookRequest): Promise<void>;
   listFrequencies(query: FrequencyQuery): Promise<FrequencyRowDto[]>;

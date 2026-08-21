@@ -3,6 +3,7 @@ import type { BooksApi } from './ipc-contract';
 
 const api: BooksApi = {
   getPathForFile: (file) => webUtils.getPathForFile(file),
+  chooseBookFile: () => ipcRenderer.invoke('books:choose-file'),
   onImportProgress: (listener) => {
     const handler = (_event: Electron.IpcRendererEvent, progress: { chunksProcessed: number }) => listener(progress);
     ipcRenderer.on('books:progress', handler);

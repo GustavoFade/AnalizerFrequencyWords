@@ -7,6 +7,7 @@ declare global {
 
 const form = document.querySelector<HTMLFormElement>('#add-book-form');
 const fileInput = document.querySelector<HTMLInputElement>('#file');
+const chooseButton = document.querySelector<HTMLButtonElement>('#choose-file');
 const areaInput = document.querySelector<HTMLInputElement>('#subject-area');
 const status = document.querySelector<HTMLElement>('#status');
 const bookSummary = document.querySelector<HTMLElement>('#book-summary');
@@ -75,7 +76,22 @@ async function updateBookSummary(): Promise<void> {
 
 fileInput?.addEventListener('change', () => {
   const file = fileInput.files?.[0];
-  selectedFile = file ? window.booksApi.getPathForFile(file) : null;
+  try {
+    selectedFile = file ? window.booksApi.getPathForFile(file) : null;
+    setStatus(selectedFile ? `Selected: ${file?.name ?? selectedFile}` : 'No file selected.');
+  } catch (error) {
+    selectedFile = null;
+    setStatus(error instanceof Error ? error.message : 'Could not read selected file.');
+  }
+});
+
+chooseButton?.addEventListener('click', async () => {
+  try {
+    selectedFile = await window.booksApi.chooseBookFile();
+    setStatus(selectedFile ? `Selected: ${selectedFile.split(/[\\/]/u).pop() ?? selectedFile}` : 'No file selected.');
+  } catch (error) {
+    setStatus(error instanceof Error ? error.message : 'Could not choose file.');
+  }
 });
 
 form?.addEventListener('submit', async (event) => {

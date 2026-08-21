@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import { join } from 'node:path';
 import { AddBook } from '../application/add-book';
 import { ListFrequencies } from '../application/frequency-query';
@@ -27,6 +27,14 @@ function createWindow(): void {
 
 function registerIpc(store: SqliteBookStore, save: () => Promise<void>, queue: SerialTaskQueue): void {
   const listFrequencies = new ListFrequencies(store);
+
+  ipcMain.handle('books:choose-file', async () => {
+    const result = await dialog.showOpenDialog({
+      properties: ['openFile'],
+      filters: [{ name: 'Books', extensions: ['txt', 'pdf'] }]
+    });
+    return result.canceled ? null : result.filePaths[0] ?? null;
+  });
   ipcMain.handle('books:add', (event, request: Parameters<BooksApi['addBook']>[0]) => queue.add(async () => {
     const extractor = fileTypeFor(request.sourceIdentifier) === 'pdf' ? new PdfExtractor() : new TxtExtractor();
     await new AddBook(extractor, store, (chunksProcessed) => {
