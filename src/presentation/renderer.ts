@@ -24,6 +24,7 @@ function setStatus(message: string): void {
 function currentQuery(): FrequencyQuery {
   if (scopeSelect?.value === 'book') return { scope: 'book', bookId: Number(filterSelect?.value) };
   if (scopeSelect?.value === 'area') return { scope: 'area', subjectArea: filterSelect?.value ?? '' };
+  if (scopeSelect?.value === 'shared') return { scope: 'shared' };
   return { scope: 'global' };
 }
 
@@ -46,7 +47,7 @@ function renderWords(): void {
 
 async function updateFilterOptions(): Promise<void> {
   if (!scopeSelect || !filterLabel || !filterSelect) return;
-  if (scopeSelect.value === 'global') {
+  if (scopeSelect.value === 'global' || scopeSelect.value === 'shared') {
     filterLabel.hidden = true;
     renderWords();
     return;

@@ -10,7 +10,8 @@ export interface AddBookRequest {
 export type FrequencyQuery =
   | { readonly scope: 'global' }
   | { readonly scope: 'book'; readonly bookId: number }
-  | { readonly scope: 'area'; readonly subjectArea: string };
+  | { readonly scope: 'area'; readonly subjectArea: string }
+  | { readonly scope: 'shared' };
 
 export interface BooksApi {
   chooseBookFile(): Promise<string | null>;

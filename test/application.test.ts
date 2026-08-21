@@ -8,7 +8,7 @@ function storeWithGlobal(): BookStore {
     listGlobalFrequencies: () => [{ word: 'new', count: 3 }],
     listBookFrequencies: () => [{ word: 'new', count: 2 }],
     listAreaFrequencies: () => [{ word: 'new', count: 1 }],
-    listSharedWords: () => [],
+    listSharedWords: () => [{ word: 'shared', count: 2 }],
     listBooks: () => [],
     listSubjectAreas: () => []
   };
@@ -20,5 +20,6 @@ describe('ListFrequencies', () => {
     expect(query.execute({ scope: 'global' })).toEqual([{ word: 'new', frequency: 3 }]);
     expect(query.execute({ scope: 'book', bookId: 1 })).toEqual([{ word: 'new', frequency: 2 }]);
     expect(query.execute({ scope: 'area', subjectArea: 'fiction' })).toEqual([{ word: 'new', frequency: 1 }]);
+    expect(query.execute({ scope: 'shared' })).toEqual([{ word: 'shared', frequency: 2 }]);
   });
 });
