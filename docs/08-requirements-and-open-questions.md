@@ -9,7 +9,7 @@ Este documento registra decisoes funcionais ja tomadas e pontos que precisam ser
 - Stop words podem ser ocultadas por filtro na UI, mas nao sao removidas durante a importacao.
 - O usuario podera consultar a lista globalmente, por livro ou por area.
 - Uma segunda importacao do mesmo livro deve ser bloqueada.
-- A persistencia usara um ORM ou query builder para SQLite; a biblioteca concreta ainda precisa ser escolhida.
+- A persistencia inicial usara `sql.js`, mantendo o driver atras de portas de infraestrutura para evitar addon nativo no ambiente Windows/Node atual.
 - `pdfjs-dist` sera usado para PDF digital; PDF escaneado sem camada de texto nao sera tratado por OCR nesta versao.
 - A analise deve ser incremental: TXT por stream, PDF por pagina e dominio por chunks.
 
@@ -23,7 +23,7 @@ Este documento registra decisoes funcionais ja tomadas e pontos que precisam ser
 6. **Stop words:** qual lista inicial deve alimentar o filtro e o filtro deve ser global, por area ou configuravel pelo usuario?
 7. **PDF:** deve preservar ordem de leitura em colunas, remover cabecalhos/rodapes repetidos e recompor palavras quebradas entre linhas?
 8. **Memoria:** qual tamanho de livro e pico de memoria aceitaveis para validar o streaming? O mapa de frequencias de palavras unicas pode continuar em memoria ou deve ser persistido incrementalmente?
-9. **ORM/query builder:** qual biblioteca sera adotada e como serao gerenciadas migrations e tipos gerados?
+9. **ORM/query builder:** a primeira versao usara SQL parametrizado sobre `sql.js`; migrations serao inicializacao idempotente do schema. Avaliar query builder tipado quando a camada de persistencia for ampliada.
 10. **Electron:** qual stack de renderer e empacotador serao usados, e quais sistemas operacionais precisam ser suportados?
 11. **Escala da lista:** a lista precisa de paginacao ou virtualizacao para muitos milhares de palavras, ou uma lista rolavel simples e suficiente?
 12. **Operacao:** o usuario podera cancelar uma importacao, excluir um livro ou corrigir seus metadados depois da importacao?
