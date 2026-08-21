@@ -14,6 +14,8 @@ function fakeStore(existing: string[] = []): BookStore & { persisted?: { book: B
     listBookFrequencies: () => [],
     listAreaFrequencies: () => [],
     listSharedWords: () => [],
+    listBooks: () => [],
+    listSubjectAreas: () => [],
     persisted
   };
   return store;

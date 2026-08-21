@@ -1,5 +1,9 @@
 import initSqlJs from 'sql.js';
 import { SqliteBookStore } from '../src/infrastructure/sqlite/sqlite-book-store';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { openPersistentDatabase, savePersistentDatabase } from '../src/infrastructure/sqlite/persistent-database';
 
 async function createStore(): Promise<SqliteBookStore> {
   const sql = await initSqlJs();
@@ -25,6 +29,11 @@ describe('SqliteBookStore', () => {
       { word: 'book', count: 1 }
     ]);
     expect(store.listSharedWords()).toEqual([{ word: 'new', count: 2 }]);
+    expect(store.listBooks()).toEqual([
+      { id: 1, title: 'One', subjectArea: 'fiction' },
+      { id: 2, title: 'Two', subjectArea: 'history' }
+    ]);
+    expect(store.listSubjectAreas()).toEqual(['fiction', 'history']);
   });
 
   it('filters frequencies by subject area', async () => {
@@ -62,5 +71,21 @@ describe('SqliteBookStore', () => {
       )
     ).toThrow();
     expect(store.listGlobalFrequencies()).toEqual([{ word: 'word', count: 1 }]);
+  });
+
+  it('saves and reopens the SQLite database', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'frequency-db-'));
+    const databasePath = join(directory, 'books.sqlite');
+    const firstDatabase = await openPersistentDatabase(databasePath);
+    const firstStore = new SqliteBookStore(firstDatabase);
+    firstStore.persistBook(
+      { title: 'Saved', sourceIdentifier: 'saved.txt', subjectArea: 'fiction' },
+      [{ word: 'remembered', count: 2 }]
+    );
+    await savePersistentDatabase(databasePath, firstDatabase);
+
+    const reopenedStore = new SqliteBookStore(await openPersistentDatabase(databasePath));
+    expect(reopenedStore.listGlobalFrequencies()).toEqual([{ word: 'remembered', count: 2 }]);
+    await rm(directory, { recursive: true, force: true });
   });
 });

@@ -1,4 +1,4 @@
-import type { BooksApi } from './ipc-contract';
+import type { BooksApi, FrequencyQuery } from './ipc-contract';
 
 declare global {
   interface Window { booksApi: BooksApi; }
@@ -10,14 +10,23 @@ const areaInput = document.querySelector<HTMLInputElement>('#subject-area');
 const chooseButton = document.querySelector<HTMLButtonElement>('#choose-file');
 const status = document.querySelector<HTMLElement>('#status');
 const wordList = document.querySelector<HTMLUListElement>('#word-list');
+const scopeSelect = document.querySelector<HTMLSelectElement>('#view-scope');
+const filterLabel = document.querySelector<HTMLLabelElement>('#filter-label');
+const filterSelect = document.querySelector<HTMLSelectElement>('#view-filter');
 let selectedFile: string | null = null;
 
 function setStatus(message: string): void {
   if (status) status.textContent = message;
 }
 
+function currentQuery(): FrequencyQuery {
+  if (scopeSelect?.value === 'book') return { scope: 'book', bookId: Number(filterSelect?.value) };
+  if (scopeSelect?.value === 'area') return { scope: 'area', subjectArea: filterSelect?.value ?? '' };
+  return { scope: 'global' };
+}
+
 function renderWords(): void {
-  void window.booksApi.listGlobalFrequencies().then((frequencies) => {
+  void window.booksApi.listFrequencies(currentQuery()).then((frequencies) => {
     if (!wordList) return;
     wordList.replaceChildren();
     if (frequencies.length === 0) {
@@ -30,6 +39,25 @@ function renderWords(): void {
       wordList.append(item);
     }
   }).catch(() => setStatus('Could not load frequencies.'));
+}
+
+async function updateFilterOptions(): Promise<void> {
+  if (!scopeSelect || !filterLabel || !filterSelect) return;
+  if (scopeSelect.value === 'global') {
+    filterLabel.hidden = true;
+    renderWords();
+    return;
+  }
+  filterLabel.hidden = false;
+  filterSelect.replaceChildren();
+  if (scopeSelect.value === 'book') {
+    for (const book of await window.booksApi.listBooks()) {
+      filterSelect.add(new Option(`${book.title} (${book.subjectArea})`, String(book.id)));
+    }
+  } else {
+    for (const area of await window.booksApi.listSubjectAreas()) filterSelect.add(new Option(area, area));
+  }
+  renderWords();
 }
 
 chooseButton?.addEventListener('click', async () => {
@@ -57,4 +85,7 @@ form?.addEventListener('submit', async (event) => {
   }
 });
 
-renderWords();
+scopeSelect?.addEventListener('change', () => { void updateFilterOptions(); });
+filterSelect?.addEventListener('change', renderWords);
+
+void updateFilterOptions();

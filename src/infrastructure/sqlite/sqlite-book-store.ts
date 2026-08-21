@@ -1,4 +1,4 @@
-import type { BookStore } from '../../application/ports/book-store';
+import type { BookStore, BookSummary } from '../../application/ports/book-store';
 import type { Book, WordFrequency } from '../../domain/word';
 import { SCHEMA } from './schema';
 
@@ -79,6 +79,22 @@ export class SqliteBookStore implements BookStore {
        GROUP BY w.id HAVING COUNT(DISTINCT bw.book_id) > 1
        ORDER BY frequency DESC, w.normalized_word ASC`
     );
+  }
+
+  listBooks(): BookSummary[] {
+    const result = this.database.exec(
+      'SELECT id, title, subject_area FROM books ORDER BY title ASC, id ASC'
+    )[0];
+    return (result?.values ?? []).map(([id, title, subjectArea]) => ({
+      id: Number(id),
+      title: String(title),
+      subjectArea: String(subjectArea)
+    }));
+  }
+
+  listSubjectAreas(): string[] {
+    const result = this.database.exec('SELECT DISTINCT subject_area FROM books ORDER BY subject_area ASC')[0];
+    return (result?.values ?? []).map(([subjectArea]) => String(subjectArea));
   }
 
   private scalarNumber(sql: string, params?: readonly unknown[]): number {

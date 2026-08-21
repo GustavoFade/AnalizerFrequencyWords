@@ -35,7 +35,15 @@
         <p id="status" role="status"></p>
       </section>
       <section class="panel" aria-labelledby="frequency-heading">
-        <h2 id="frequency-heading">Global frequencies</h2>
+        <h2 id="frequency-heading">Word frequencies</h2>
+        <label>View
+          <select id="view-scope">
+            <option value="global">Global</option>
+            <option value="book">Book</option>
+            <option value="area">Subject area</option>
+          </select>
+        </label>
+        <label id="filter-label" hidden>Filter<select id="view-filter"></select></label>
         <ul id="word-list"><li>No books imported yet.</li></ul>
       </section>
     </main>

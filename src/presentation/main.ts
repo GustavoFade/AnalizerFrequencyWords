@@ -5,16 +5,8 @@ import { PdfExtractor } from '../infrastructure/extractors/pdf-extractor';
 import { fileTypeFor } from '../infrastructure/extractors/file-validation';
 import { TxtExtractor } from '../infrastructure/extractors/txt-extractor';
 import { SqliteBookStore } from '../infrastructure/sqlite/sqlite-book-store';
-import type { BooksApi } from './ipc-contract';
-
-interface SqlJsModule {
-  Database: new () => ConstructorParameters<typeof SqliteBookStore>[0];
-}
-
-async function loadSqlJs(): Promise<SqlJsModule> {
-  const load = Function('specifier', 'return import(specifier)') as (specifier: string) => Promise<SqlJsModule>;
-  return load('sql.js');
-}
+import { openPersistentDatabase, savePersistentDatabase } from '../infrastructure/sqlite/persistent-database';
+import type { BooksApi, FrequencyQuery } from './ipc-contract';
 
 function createWindow(): void {
   const window = new BrowserWindow({
@@ -31,7 +23,7 @@ function createWindow(): void {
   void window.loadFile(join(__dirname, 'index.html'));
 }
 
-function registerIpc(store: SqliteBookStore): void {
+function registerIpc(store: SqliteBookStore, save: () => Promise<void>): void {
   ipcMain.handle('books:choose-file', async () => {
     const result = await dialog.showOpenDialog({
       properties: ['openFile'],
@@ -43,15 +35,25 @@ function registerIpc(store: SqliteBookStore): void {
   ipcMain.handle('books:add', async (_event, request: Parameters<BooksApi['addBook']>[0]) => {
     const extractor = fileTypeFor(request.sourceIdentifier) === 'pdf' ? new PdfExtractor() : new TxtExtractor();
     await new AddBook(extractor, store).execute(request);
+    await save();
   });
 
-  ipcMain.handle('books:list-global', () => store.listGlobalFrequencies());
+  ipcMain.handle('books:list-frequencies', (_event, query: FrequencyQuery) => {
+    if (query.scope === 'book') return store.listBookFrequencies(query.bookId);
+    if (query.scope === 'area') return store.listAreaFrequencies(query.subjectArea);
+    return store.listGlobalFrequencies();
+  });
+  ipcMain.handle('books:list-books', () => store.listBooks());
+  ipcMain.handle('books:list-areas', () => store.listSubjectAreas());
 }
 
 void app.whenReady().then(async () => {
-  const sql = await loadSqlJs();
-  const store = new SqliteBookStore(new sql.Database());
-  registerIpc(store);
+  const databasePath = join(app.getPath('userData'), 'frequency-words.sqlite');
+  const database = await openPersistentDatabase(databasePath);
+  const store = new SqliteBookStore(database);
+  const save = () => savePersistentDatabase(databasePath, database);
+  registerIpc(store, save);
+  app.on('before-quit', () => { void save(); });
   createWindow();
 
   app.on('activate', () => {
