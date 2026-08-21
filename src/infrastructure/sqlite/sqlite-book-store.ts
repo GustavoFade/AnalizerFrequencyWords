@@ -12,6 +12,10 @@ export class SqliteBookStore implements BookStore {
     this.database.run(SCHEMA);
   }
 
+  hasSourceIdentifier(sourceIdentifier: string): boolean {
+    return this.scalarNumber('SELECT COUNT(*) FROM books WHERE source_identifier = ?', [sourceIdentifier]) > 0;
+  }
+
   persistBook(book: Book, frequencies: readonly WordFrequency[]): void {
     if (frequencies.length === 0) throw new Error('Cannot persist a book without words');
 
