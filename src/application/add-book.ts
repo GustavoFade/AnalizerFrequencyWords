@@ -10,10 +10,13 @@ export interface AddBookInput {
   readonly subjectArea: string;
 }
 
+export type ImportProgress = (chunksProcessed: number) => void;
+
 export class AddBook {
   constructor(
     private readonly extractor: BookExtractor,
-    private readonly store: BookStore
+    private readonly store: BookStore,
+    private readonly onProgress?: ImportProgress
   ) {}
 
   async execute(input: AddBookInput): Promise<void> {
@@ -23,7 +26,12 @@ export class AddBook {
     if (this.store.hasSourceIdentifier(input.sourceIdentifier)) throw new DuplicateBookError();
 
     const analyzer = new IncrementalFrequencyAnalyzer();
-    for await (const chunk of this.extractor.extract(input.sourceIdentifier)) analyzer.addChunk(chunk);
+    let chunksProcessed = 0;
+    for await (const chunk of this.extractor.extract(input.sourceIdentifier)) {
+      analyzer.addChunk(chunk);
+      chunksProcessed += 1;
+      this.onProgress?.(chunksProcessed);
+    }
     const frequencies = analyzer.finish();
     if (frequencies.length === 0) throw new EmptyBookError();
 

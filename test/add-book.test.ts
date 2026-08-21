@@ -28,7 +28,8 @@ function extractorFrom(...chunks: string[]): BookExtractor {
 describe('AddBook', () => {
   it('extracts, analyzes and persists incrementally', async () => {
     const store = fakeStore();
-    await new AddBook(extractorFrom('New bo', 'ok new'), store).execute({
+    const progress: number[] = [];
+    await new AddBook(extractorFrom('New bo', 'ok new'), store, (chunks) => progress.push(chunks)).execute({
       title: 'Book', sourceIdentifier: 'book.txt', subjectArea: ' fiction '
     });
 
@@ -36,6 +37,7 @@ describe('AddBook', () => {
       book: { title: 'Book', sourceIdentifier: 'book.txt', subjectArea: 'fiction' },
       frequencies: [{ word: 'new', count: 2 }, { word: 'book', count: 1 }]
     });
+    expect(progress).toEqual([1, 2]);
   });
 
   it('rejects empty areas, empty books and duplicate sources', async () => {

@@ -27,9 +27,11 @@ function createWindow(): void {
 
 function registerIpc(store: SqliteBookStore, save: () => Promise<void>, queue: SerialTaskQueue): void {
   const listFrequencies = new ListFrequencies(store);
-  ipcMain.handle('books:add', (_event, request: Parameters<BooksApi['addBook']>[0]) => queue.add(async () => {
+  ipcMain.handle('books:add', (event, request: Parameters<BooksApi['addBook']>[0]) => queue.add(async () => {
     const extractor = fileTypeFor(request.sourceIdentifier) === 'pdf' ? new PdfExtractor() : new TxtExtractor();
-    await new AddBook(extractor, store).execute(request);
+    await new AddBook(extractor, store, (chunksProcessed) => {
+      event.sender.send('books:progress', { chunksProcessed });
+    }).execute(request);
     await save();
   }));
 

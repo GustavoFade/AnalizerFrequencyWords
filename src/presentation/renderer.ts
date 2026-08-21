@@ -9,12 +9,17 @@ const form = document.querySelector<HTMLFormElement>('#add-book-form');
 const fileInput = document.querySelector<HTMLInputElement>('#file');
 const areaInput = document.querySelector<HTMLInputElement>('#subject-area');
 const status = document.querySelector<HTMLElement>('#status');
+const bookSummary = document.querySelector<HTMLElement>('#book-summary');
 const wordList = document.querySelector<HTMLUListElement>('#word-list');
 const scopeSelect = document.querySelector<HTMLSelectElement>('#view-scope');
 const filterLabel = document.querySelector<HTMLLabelElement>('#filter-label');
 const filterSelect = document.querySelector<HTMLSelectElement>('#view-filter');
 const stopWordsCheckbox = document.querySelector<HTMLInputElement>('#hide-stop-words');
 let selectedFile: string | null = null;
+
+window.booksApi.onImportProgress(({ chunksProcessed }) => {
+  setStatus(`Importing book... processed ${chunksProcessed} text chunks.`);
+});
 
 function setStatus(message: string): void {
   if (status) status.textContent = message;
@@ -63,6 +68,11 @@ async function updateFilterOptions(): Promise<void> {
   renderWords();
 }
 
+async function updateBookSummary(): Promise<void> {
+  const books = await window.booksApi.listBooks();
+  if (bookSummary) bookSummary.textContent = `${books.length} book${books.length === 1 ? '' : 's'} imported.`;
+}
+
 fileInput?.addEventListener('change', () => {
   const file = fileInput.files?.[0];
   selectedFile = file ? window.booksApi.getPathForFile(file) : null;
@@ -82,7 +92,8 @@ form?.addEventListener('submit', async (event) => {
       subjectArea: areaInput.value
     });
     setStatus('Book imported successfully.');
-    renderWords();
+    await updateBookSummary();
+    await updateFilterOptions();
   } catch (error) {
     setStatus(error instanceof Error ? error.message : 'Could not import book.');
   }
@@ -93,3 +104,4 @@ filterSelect?.addEventListener('change', renderWords);
 stopWordsCheckbox?.addEventListener('change', renderWords);
 
 void updateFilterOptions();
+void updateBookSummary();

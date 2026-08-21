@@ -7,6 +7,10 @@ export interface AddBookRequest {
   readonly subjectArea: string;
 }
 
+export interface ImportProgress {
+  readonly chunksProcessed: number;
+}
+
 export type FrequencyQuery =
   | { readonly scope: 'global' }
   | { readonly scope: 'book'; readonly bookId: number }
@@ -15,6 +19,7 @@ export type FrequencyQuery =
 
 export interface BooksApi {
   getPathForFile(file: File): string;
+  onImportProgress(listener: (progress: ImportProgress) => void): () => void;
   addBook(request: AddBookRequest): Promise<void>;
   listFrequencies(query: FrequencyQuery): Promise<FrequencyRowDto[]>;
   listBooks(): Promise<BookSummary[]>;
