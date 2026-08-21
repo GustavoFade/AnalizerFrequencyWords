@@ -45,6 +45,7 @@ node_modules/
 dist/
 coverage/
 release/
+test-results/
 *.db
 *.db-shm
 *.db-wal
