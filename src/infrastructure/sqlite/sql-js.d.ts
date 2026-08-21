@@ -6,6 +6,7 @@ declare module 'sql.js' {
       values: unknown[][];
     }>;
     close(): void;
+    export(): Uint8Array;
   }
 
   interface SqlJsStatic {
