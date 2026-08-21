@@ -49,7 +49,8 @@ function registerIpc(store: SqliteBookStore, save: () => Promise<void>, queue: S
 }
 
 void app.whenReady().then(async () => {
-  const databasePath = join(app.getPath('userData'), 'frequency-words.sqlite');
+  const userDataDir = process.env.E2E_USER_DATA_DIR ?? app.getPath('userData');
+  const databasePath = join(userDataDir, 'frequency-words.sqlite');
   const database = await openPersistentDatabase(databasePath);
   const store = new SqliteBookStore(database);
   const save = () => savePersistentDatabase(databasePath, database);

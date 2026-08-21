@@ -86,8 +86,8 @@ fileInput?.addEventListener('change', () => {
 });
 
 chooseButton?.addEventListener('click', async () => {
-  try {
-    selectedFile = await window.booksApi.chooseBookFile();
+    try {
+      selectedFile = await window.booksApi.chooseBookFile();
     setStatus(selectedFile ? `Selected: ${selectedFile.split(/[\\/]/u).pop() ?? selectedFile}` : 'No file selected.');
   } catch (error) {
     setStatus(error instanceof Error ? error.message : 'Could not choose file.');
