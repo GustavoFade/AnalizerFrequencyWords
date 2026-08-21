@@ -1,4 +1,5 @@
 import type { BooksApi, FrequencyQuery } from './ipc-contract';
+import { hideStopWords } from './stop-words';
 
 declare global {
   interface Window { booksApi: BooksApi; }
@@ -13,6 +14,7 @@ const wordList = document.querySelector<HTMLUListElement>('#word-list');
 const scopeSelect = document.querySelector<HTMLSelectElement>('#view-scope');
 const filterLabel = document.querySelector<HTMLLabelElement>('#filter-label');
 const filterSelect = document.querySelector<HTMLSelectElement>('#view-filter');
+const stopWordsCheckbox = document.querySelector<HTMLInputElement>('#hide-stop-words');
 let selectedFile: string | null = null;
 
 function setStatus(message: string): void {
@@ -27,15 +29,16 @@ function currentQuery(): FrequencyQuery {
 
 function renderWords(): void {
   void window.booksApi.listFrequencies(currentQuery()).then((frequencies) => {
+    const visibleFrequencies = hideStopWords(frequencies, stopWordsCheckbox?.checked ?? false);
     if (!wordList) return;
     wordList.replaceChildren();
-    if (frequencies.length === 0) {
+    if (visibleFrequencies.length === 0) {
       wordList.innerHTML = '<li>No books imported yet.</li>';
       return;
     }
-    for (const frequency of frequencies) {
+    for (const frequency of visibleFrequencies) {
       const item = document.createElement('li');
-      item.textContent = `${frequency.word} ${frequency.count}`;
+      item.textContent = `${frequency.word} ${frequency.frequency}`;
       wordList.append(item);
     }
   }).catch(() => setStatus('Could not load frequencies.'));
@@ -87,5 +90,6 @@ form?.addEventListener('submit', async (event) => {
 
 scopeSelect?.addEventListener('change', () => { void updateFilterOptions(); });
 filterSelect?.addEventListener('change', renderWords);
+stopWordsCheckbox?.addEventListener('change', renderWords);
 
 void updateFilterOptions();
