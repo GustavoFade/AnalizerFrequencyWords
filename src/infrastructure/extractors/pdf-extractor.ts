@@ -34,10 +34,15 @@ export class PdfExtractor implements BookExtractor {
 
     const pdf = await this.loadPdf();
     const document = await pdf.getDocument({ data: new Uint8Array(await readFile(sourcePath)) }).promise;
+    let extractedText = false;
     for (let pageNumber = 1; pageNumber <= document.numPages; pageNumber += 1) {
       const content = await document.getPage(pageNumber).then((page) => page.getTextContent());
       const text = content.items.map((item) => item.str ?? '').join(' ');
-      if (text.length > 0) yield text;
+      if (text.trim().length > 0) {
+        extractedText = true;
+        yield text;
+      }
     }
+    if (!extractedText) throw new Error('PDF contains no extractable text; scanned PDFs are not supported.');
   }
 }

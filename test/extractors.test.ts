@@ -47,6 +47,19 @@ describe('book extractors', () => {
     expect(await collect(new PdfExtractor().extract(path))).toEqual(['shared words']);
   });
 
+  it('rejects a PDF without a text layer', async () => {
+    const extractor = new PdfExtractor(async () => ({
+      getDocument: () => ({
+        promise: Promise.resolve({ numPages: 1, getPage: async () => ({ getTextContent: async () => ({ items: [] }) }) })
+      })
+    }));
+    const directory = await mkdtemp(join(tmpdir(), 'frequency-words-'));
+    const path = join(directory, 'scanned.pdf');
+    await writeFile(path, 'fake pdf', 'utf8');
+
+    await expect(collect(extractor.extract(path))).rejects.toThrow(/scanned|text/i);
+  });
+
   it('rejects unsupported formats', () => {
     expect(fileTypeFor('book.TXT')).toBe('txt');
     expect(() => fileTypeFor('book.docx')).toThrow(/txt|pdf/i);
