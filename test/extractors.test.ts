@@ -42,6 +42,11 @@ describe('book extractors', () => {
     expect(await collect(extractor.extract(path))).toEqual(['page one', 'page two']);
   });
 
+  it('extracts text from a real digital PDF fixture', async () => {
+    const path = join(__dirname, 'fixtures', 'book.pdf');
+    expect(await collect(new PdfExtractor().extract(path))).toEqual(['shared words']);
+  });
+
   it('rejects unsupported formats', () => {
     expect(fileTypeFor('book.TXT')).toBe('txt');
     expect(() => fileTypeFor('book.docx')).toThrow(/txt|pdf/i);

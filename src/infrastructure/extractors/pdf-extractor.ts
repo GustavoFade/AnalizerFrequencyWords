@@ -33,7 +33,7 @@ export class PdfExtractor implements BookExtractor {
     if (fileTypeFor(sourcePath) !== 'pdf') throw new Error('PdfExtractor accepts only .pdf files');
 
     const pdf = await this.loadPdf();
-    const document = await pdf.getDocument({ data: await readFile(sourcePath) }).promise;
+    const document = await pdf.getDocument({ data: new Uint8Array(await readFile(sourcePath)) }).promise;
     for (let pageNumber = 1; pageNumber <= document.numPages; pageNumber += 1) {
       const content = await document.getPage(pageNumber).then((page) => page.getTextContent());
       const text = content.items.map((item) => item.str ?? '').join(' ');

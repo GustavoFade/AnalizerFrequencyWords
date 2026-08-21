@@ -7,8 +7,8 @@
   "scripts": {
     "dev": "npm run build && electron .",
     "build": "tsc -p tsconfig.json && node scripts/copy-renderer.cjs",
-    "test": "jest --runInBand",
-    "test:focused": "jest --runInBand test/bootstrap.test.ts",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
+    "test:focused": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand test/bootstrap.test.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
     "architecture": "depcruise --validate .dependency-cruiser.cjs src",
